@@ -5,4 +5,4 @@
 (define pkg-desc "require/typed, powered by Soft Contracts")
 (define version "0.0")
 (define pkga-authors '(ben))
-(define scribblings '(("scribblings/require-typed-scv.scrbl" () ())))
+(define scribblings '(("docs/require-typed-scv.scrbl" ())))
