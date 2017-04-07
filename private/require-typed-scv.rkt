@@ -26,11 +26,12 @@
      [(_ mod-path:str [f:id t] ...)
       #:when (let* ([mp (syntax->string #'mod-path)]
                     [ok?
-                     (verify
-                       mp
-                       (for/list ([f-stx (in-list (syntax-e #'(f ...)))]
-                                  [t-stx (in-list (syntax-e #'(t ...)))])
-                         (list (syntax->symbol f-stx) (syntax->type-contract-rep t-stx))))]
+                     (parameterize ([current-directory (syntax->directory stx)])
+                       (verify
+                         mp
+                         (for/list ([f-stx (in-list (syntax-e #'(f ...)))]
+                                    [t-stx (in-list (syntax-e #'(t ...)))])
+                           (list (syntax->symbol f-stx) (syntax->type-contract-rep t-stx)))))]
                     [_log
                      (if ok?
                        (log-rts-info "successfully verified '~a'" mp)
@@ -53,4 +54,11 @@
   (if (symbol? v)
     v
     (raise-argument-error 'syntax->symbol "(syntaxof symbol?)" stx)))
+
+(define-for-syntax (syntax->directory stx)
+  (define src (syntax-source stx))
+  (if (path-string? src)
+    (let-values ([(b n d) (split-path src)])
+      b)
+    (current-directory)))
 
