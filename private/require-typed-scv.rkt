@@ -13,6 +13,7 @@
   (for-syntax
     racket/base
     require-typed-scv/private/verify
+    require-typed-scv/private/log
     syntax/parse
     typed/untyped-utils))
 
@@ -23,10 +24,18 @@
     (raise-user-error 'require/typed/scv "must be called in a typed context")
     (syntax-parse stx
      [(_ mod-path:str [f:id t] ...)
-      #:when (verify (syntax->string #'mod-path)
-                     (for/list ([f-stx (in-list (syntax-e #'(f ...)))]
-                                [t-stx (in-list (syntax-e #'(t ...)))])
-                       (list (syntax->symbol f-stx) (syntax->type-contract-rep t-stx))))
+      #:when (let* ([mp (syntax->string #'mod-path)]
+                    [ok?
+                     (verify
+                       mp
+                       (for/list ([f-stx (in-list (syntax-e #'(f ...)))]
+                                  [t-stx (in-list (syntax-e #'(t ...)))])
+                         (list (syntax->symbol f-stx) (syntax->type-contract-rep t-stx))))]
+                    [_log
+                     (if ok?
+                       (log-rts-info "successfully verified '~a'" mp)
+                       (log-rts-info "failed to verify '~a'" mp))])
+               ok?)
       (syntax/loc stx
         (unsafe-require/typed mod-path [f t] ...))]
      [(_ . arg*)
