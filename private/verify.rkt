@@ -12,9 +12,12 @@
 
 (require
   require-typed-scv/private/log
+  (only-in racket/list
+    last)
   (only-in racket/system
     system*)
   (only-in racket/port
+    peeking-input-port
     with-output-to-string)
   (only-in racket/string
     string-contains?
@@ -35,7 +38,8 @@
       (call-with-output-file dst-name
         (λ (dst-port)
           ;; copy lang line
-          (displayln (read-line src-port) dst-port)
+          (display "#lang " dst-port)
+          (displayln (read-lang src-port) dst-port)
           ;; require soft-contract
           (displayln "(require soft-contract/fake-contract)" dst-port)
           ;; copy body
@@ -50,9 +54,32 @@
           (void))))))
 
 (define (copy-without-provides src-port dst-port)
-  (for ((ln (in-lines src-port))
-        #:unless (string-contains? ln "provide"))
-    (displayln ln dst-port)))
+  (let loop ()
+    (define v (read src-port))
+    (cond
+     [(eof-object? v)
+      (void)]
+     [(and (pair? v) (memq (car v) '(provide #%provide)))
+      (loop)]
+     [else
+      (writeln v dst-port)
+      (loop)])))
+
+;; read-lang : input-port? -> (or/c #f string?)
+(define read-lang
+  (let ([read-language-fail (gensym 'read-language-fail)])
+    (λ (port)
+      (define port* (peeking-input-port port))
+      (port-count-lines! port*)
+      (and
+       (with-handlers ([exn:fail:read? (λ (e) #false)])
+         (not (eq? (read-language port* (λ () read-language-fail))
+                   read-language-fail)))
+       (let* ([end (file-position port*)]
+              [str (read-string end port)]
+              [hash-lang-positions (regexp-match-positions* "#lang|#!" str)]
+              [start (cdr (last hash-lang-positions))])
+         (string-trim (substring str start)))))))
 
 (define (run-scv fname)
   (shell "raco" "scv" fname))
