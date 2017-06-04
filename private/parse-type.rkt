@@ -33,15 +33,21 @@
 ;; very simple!
 (define-for-syntax (syntax->type-contract-rep stx)
   (syntax-parse stx
-   #:literals (tr--> tr-Integer tr-String)
+   #:literals (tr--> tr-Integer tr-String tr-Listof tr-Boolean tr-HashTable)
    [(tr--> . arg*)
     (cons '-> (map syntax->type-contract-rep (syntax-e #'arg*)))]
    [(tr-Listof t)
-    (cons 'listof (list (syntax->type-contract-rep #'t)))]
+    (list 'listof (syntax->type-contract-rep #'t))]
+   [(tr-HashTable k v)
+    (list 'hash/c (syntax->type-contract-rep #'k) (syntax->type-contract-rep #'v))]
    [tr-Integer
     'integer?]
    [tr-String
     'string?]
+   [tr-Boolean
+    'boolean?]
+   [tr-Any
+    'any/c]
    [_
     (raise-user-error 'syntax->type-contract-rep "cannot parse type ~a" (syntax->datum stx))]))
 
