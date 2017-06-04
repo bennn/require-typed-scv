@@ -3,6 +3,6 @@
 (define deps '("base" "reprovide-lang" "soft-contract" "typed-racket-lib" "typed-racket-more"))
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib" "typed-racket-doc"))
 (define pkg-desc "require/typed, powered by Soft Contracts")
-(define version "0.0")
+(define version "0.1")
 (define pkga-authors '(ben))
 (define scribblings '(("docs/require-typed-scv.scrbl" ())))
