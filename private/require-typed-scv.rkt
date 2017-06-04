@@ -5,7 +5,6 @@
 
 (require
   racket/port
-  require-typed-scv/private/parse-type
   (only-in typed/racket/base
     require/typed)
   (only-in typed/racket/unsafe
@@ -31,7 +30,7 @@
                          mp
                          (for/list ([f-stx (in-list (syntax-e #'(f ...)))]
                                     [t-stx (in-list (syntax-e #'(t ...)))])
-                           (list (syntax->symbol f-stx) (syntax->type-contract-rep t-stx)))))]
+                           (list (syntax->symbol f-stx) (syntax->type-rep t-stx)))))]
                     [_log
                      (if ok?
                        (log-rts-info "successfully verified '~a'" mp)
@@ -62,3 +61,5 @@
       b)
     (current-directory)))
 
+(define-for-syntax syntax->type-rep
+  syntax->datum)
