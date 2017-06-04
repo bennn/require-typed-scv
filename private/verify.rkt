@@ -40,8 +40,6 @@
           ;; copy lang line
           (display "#lang " dst-port)
           (displayln (read-lang src-port) dst-port)
-          ;; require soft-contract
-          (displayln "(require soft-contract/fake-contract)" dst-port)
           ;; copy body
           (copy-without-provides src-port dst-port)
           ;; print verification condition
