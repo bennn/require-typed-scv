@@ -34,12 +34,14 @@
 (define-for-syntax (syntax->type-contract-rep stx)
   (syntax-parse stx
    #:literals (tr--> tr-Integer tr-String)
-   [(tr--> . arg)
-    (cons '-> (map syntax->type-contract-rep (syntax-e #'arg)))]
+   [(tr--> . arg*)
+    (cons '-> (map syntax->type-contract-rep (syntax-e #'arg*)))]
    [tr-Integer
     'integer?]
    [tr-String
-    'string?]))
+    'string?]
+   [_
+    (raise-user-error 'syntax->type-contract-rep "cannot parse type ~a" (syntax->datum stx))]))
 
 ;; =============================================================================
 ;;; too hard
