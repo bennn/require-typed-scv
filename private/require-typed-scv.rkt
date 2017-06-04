@@ -5,6 +5,7 @@
 
 (require
   racket/port
+  require-typed-scv/private/parse-type
   (only-in typed/racket/base
     require/typed)
   (only-in typed/racket/unsafe
@@ -61,5 +62,3 @@
       b)
     (current-directory)))
 
-(define-for-syntax syntax->type-rep
-  syntax->datum)

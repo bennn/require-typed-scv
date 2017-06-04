@@ -44,7 +44,8 @@
           (copy-without-provides src-port dst-port)
           ;; print verification condition
           (newline dst-port)
-          (displayln "(require require-typed-scv/private/fake-type)" dst-port)
+          ;;(displayln "(require require-typed-scv/private/fake-type)" dst-port)
+          (displayln "(require racket/contract)" dst-port)
           (displayln "(provide (contract-out" dst-port)
           (for ([x (in-list id+ctc)])
             (display "  " dst-port)
