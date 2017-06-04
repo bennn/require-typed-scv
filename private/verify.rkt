@@ -44,11 +44,12 @@
           (copy-without-provides src-port dst-port)
           ;; print verification condition
           (newline dst-port)
-          (displayln "(provide/contract" dst-port)
+          (displayln "(require racket/contract)" dst-port)
+          (displayln "(provide (contract-out" dst-port)
           (for ([x (in-list id+ctc)])
             (display "  " dst-port)
             (displayln x dst-port))
-          (displayln ")" dst-port)
+          (displayln "))" dst-port)
           (void))))))
 
 (define (copy-without-provides src-port dst-port)

@@ -36,6 +36,8 @@
    #:literals (tr--> tr-Integer tr-String)
    [(tr--> . arg*)
     (cons '-> (map syntax->type-contract-rep (syntax-e #'arg*)))]
+   [(tr-Listof t)
+    (cons 'listof (list (syntax->type-contract-rep #'t)))]
    [tr-Integer
     'integer?]
    [tr-String
