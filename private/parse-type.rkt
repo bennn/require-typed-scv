@@ -16,11 +16,13 @@
   ;; TODO https://github.com/philnguyen/soft-contract/issues/82
   ;; syntax->datum
   (syntax-parse stx
-   #:literals (tr--> tr-Integer tr-String tr-Listof tr-Boolean tr-HashTable)
+   #:literals (tr--> tr-Integer tr-String tr-Listof tr-Vectorof tr-Boolean tr-HashTable)
    [(tr--> . arg*)
     (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
    [(tr-Listof t)
     (list 'listof (syntax->type-rep #'t))]
+   [(tr-Vectorof t)
+    (list 'vectorof (syntax->type-rep #'t))]
    [(tr-HashTable k v)
     (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
    [tr-Integer
