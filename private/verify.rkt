@@ -29,7 +29,7 @@
   (call-with-tmpfile mod-path
     (λ (mod-path.bak)
       (copy/scv mod-path mod-path.bak id+ctc*)
-      (log-rts-info "running SCV on '~a' with spec '~a'" mod-path id+ctc*)
+      (log-require-typed-scv-info "running SCV on '~a' with spec '~a'" mod-path id+ctc*)
       (scv-safe? (run-scv mod-path.bak)))))
 
 (define (copy/scv src-name dst-name id+ctc)

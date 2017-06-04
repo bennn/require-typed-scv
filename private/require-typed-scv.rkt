@@ -33,8 +33,8 @@
                            (list (syntax->symbol f-stx) (syntax->type-rep t-stx)))))]
                     [_log
                      (if ok?
-                       (log-rts-info "successfully verified '~a'" mp)
-                       (log-rts-info "failed to verify '~a'" mp))])
+                       (log-require-typed-scv-info "successfully verified '~a'" mp)
+                       (log-require-typed-scv-info "failed to verify '~a'" mp))])
                ok?)
       (syntax/loc stx
         (unsafe-require/typed mod-path [f t] ...))]
