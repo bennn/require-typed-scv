@@ -1,5 +1,5 @@
 #lang scribble/manual
-@require[(for-label require-typed-scv)]
+@require[(for-label (only-in typed/racket require/typed) require-typed-scv)]
 
 @title{Require Typed, with Soft Contract Verification}
 @author{@hyperlink["https://github.com/bennn"]{Ben Greenman}}
