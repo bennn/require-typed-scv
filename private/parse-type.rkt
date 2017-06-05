@@ -26,6 +26,8 @@
     (list 'listof (syntax->type-rep #'t))]
    [((~literal tr-Vectorof) t)
     (list 'vectorof (syntax->type-rep #'t))]
+   [((~literal tr-Vector) . t*)
+    (cons 'vector/c (map syntax->type-rep (syntax-e #'t*)))]
    [((~literal tr-HashTable) k v)
     (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
    [((~literal tr-Pairof) a b)
