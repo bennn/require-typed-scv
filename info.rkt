@@ -6,3 +6,4 @@
 (define version "0.1")
 (define pkga-authors '(ben))
 (define scribblings '(("docs/require-typed-scv.scrbl" ())))
+(define test-omit-paths '("./test/gtp"))
