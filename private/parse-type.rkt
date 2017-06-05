@@ -17,39 +17,34 @@
   ;; TODO https://github.com/philnguyen/soft-contract/issues/82
   ;; syntax->datum
   (syntax-parse stx
-   #:literals (tr--> f-->
-               tr-Any tr-True tr-False tr-Real tr-Natural tr-Integer tr-U
-               tr-String tr-Pairof tr-Listof tr-Vectorof tr-Boolean tr-HashTable)
-   [((~or tr--> f-->) . arg*)
+   [((~or (~literal tr-->) (~literal f-->)) . arg*)
     (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
-   [(tr-U . t*)
+   [((~literal tr-U) . t*)
     (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
-   [(tr-Listof t)
+   [((~literal tr-Listof) t)
     (list 'listof (syntax->type-rep #'t))]
-   [(tr-Vectorof t)
+   [((~literal tr-Vectorof) t)
     (list 'vectorof (syntax->type-rep #'t))]
-   [(tr-HashTable k v)
+   [((~literal tr-HashTable) k v)
     (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
-   [(tr-Pairof a b)
+   [((~literal tr-Pairof) a b)
     (list 'cons/c (syntax->type-rep #'a) (syntax->type-rep #'b))]
-   [tr-Natural
+   [(~literal tr-Natural)
     'exact-nonnegative-integer?]
-   [tr-Real
+   [(~literal tr-Real)
     'real?]
-   [tr-Integer
+   [(~literal tr-Integer)
     'integer?]
-   [tr-String
+   [(~literal tr-String)
     'string?]
-   [tr-Boolean
+   [(~literal tr-Boolean)
     'boolean?]
-   [tr-True
+   [(~literal tr-True)
     '#t]
-   [tr-False
+   [(~literal tr-False)
     '#f]
-   [tr-Any
+   [(~literal tr-Any)
     'any/c]
-   [x:id
-    (string->symbol (string-downcase (format "~a?" (syntax-e #'x))))]
    [_
     (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))]))
 
