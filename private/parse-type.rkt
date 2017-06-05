@@ -48,6 +48,8 @@
     '#f]
    [(~literal tr-Any)
     'any/c]
+   [((~or (~literal values) (~literal tr-Values)) . t*)
+    (cons 'values (map syntax->type-rep (syntax-e #'t*)))]
    [x:id
     #:when (char-downcase? (first-char (symbol->string (syntax-e #'x))))
     (log-require-typed-scv-error "assuming '~a' is valid racket/contract" (syntax-e #'x))
