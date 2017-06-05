@@ -18,38 +18,28 @@
   ;; TODO https://github.com/philnguyen/soft-contract/issues/82
   ;; syntax->datum
   (syntax-parse stx
-   [((~or (~literal tr-->) (~literal f-->)) . arg*)
-    (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
-   [((~literal tr-U) . t*)
-    (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
-   [((~literal tr-Listof) t)
-    (list 'listof (syntax->type-rep #'t))]
-   [((~literal tr-Vectorof) t)
-    (list 'vectorof (syntax->type-rep #'t))]
-   [((~literal tr-Vector) . t*)
-    (cons 'vector/c (map syntax->type-rep (syntax-e #'t*)))]
-   [((~literal tr-HashTable) k v)
-    (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
-   [((~literal tr-Pairof) a b)
-    (list 'cons/c (syntax->type-rep #'a) (syntax->type-rep #'b))]
-   [(~literal tr-Natural)
-    'exact-nonnegative-integer?]
-   [(~literal tr-Real)
-    'real?]
-   [(~literal tr-Integer)
-    'integer?]
-   [(~literal tr-String)
-    'string?]
-   [(~literal tr-Boolean)
-    'boolean?]
-   [(~literal tr-True)
-    '#t]
-   [(~literal tr-False)
-    '#f]
-   [(~literal tr-Any)
-    'any/c]
-   [((~or (~literal values) (~literal tr-Values)) . t*)
-    (cons 'values (map syntax->type-rep (syntax-e #'t*)))]
+   [((~or (~literal tr-->) (~literal f-->)) . arg*) (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
+   [((~or (~literal values) (~literal tr-Values)) . t*) (cons 'values (map syntax->type-rep (syntax-e #'t*)))]
+   [((~literal tr-HashTable) k v) (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
+   [((~literal tr-Listof) t) (list 'listof (syntax->type-rep #'t))]
+   [((~literal tr-Pairof) a b) (list 'cons/c (syntax->type-rep #'a) (syntax->type-rep #'b))]
+   [((~literal tr-U) . t*) (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
+   [((~literal tr-Vector) . t*) (cons 'vector/c (map syntax->type-rep (syntax-e #'t*)))]
+   [((~literal tr-Vectorof) t) (list 'vectorof (syntax->type-rep #'t))]
+   [(~literal tr-Any) 'any/c]
+   [(~literal tr-Boolean) 'boolean?]
+   [(~literal tr-False) '#f]
+   [(~literal tr-Float) 'flonum?]
+   [(~literal tr-Integer) 'integer?]
+   [(~literal tr-Natural) 'exact-nonnegative-integer?]
+   [(~literal tr-Path) 'path?]
+   [(~literal tr-Path-String) 'path-string?]
+   [(~literal tr-Real) 'real?]
+   [(~literal tr-String) 'string?]
+   [(~literal tr-Symbol) 'symbol?]
+   [(~literal tr-True) '#t]
+   [(~literal tr-Void) 'void]
+   [(~datum #f) '#f]
    [x:id
     #:when (char-downcase? (first-char (symbol->string (syntax-e #'x))))
     (log-require-typed-scv-error "assuming '~a' is valid racket/contract" (syntax-e #'x))
