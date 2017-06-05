@@ -97,12 +97,9 @@
   res)
 
 (define (make-backup-filename fname)
-  (define bak (path-add-extension fname ".bak" #"."))
-  (if (not (file-exists? bak))
-    bak
-    (for/or ([i (in-naturals 1)])
-      (let ([n (path-replace-extension bak (format ".bak~a" i))])
-        (and (not (file-exists? n)) n)))))
+  (for/or ([i (in-naturals 0)])
+    (let ([n (path-add-extension fname (format ".~a.bak" i) #".")])
+      (and (not (file-exists? n)) n))))
 
 (define (path-string->string x)
   (if (path? x) (path->string x) x))
