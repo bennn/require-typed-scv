@@ -9,6 +9,7 @@
   (prefix-in f- soft-contract/fake-contract)
   (for-syntax
     racket/base
+    require-typed-scv/private/log
     syntax/parse))
 
 ;; =============================================================================
@@ -45,8 +46,20 @@
     '#f]
    [(~literal tr-Any)
     'any/c]
+   [x:id
+    #:when (char-downcase? (first-char (symbol->string (syntax-e #'x))))
+    (log-require-typed-scv-error "assuming '~a' is valid racket/contract" (syntax-e #'x))
+    (syntax-e #'x)]
    [_
     (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))]))
+
+(define-for-syntax (first-char str)
+  (if (zero? (string-length str))
+    #\A
+    (string-ref str 0)))
+
+(define-for-syntax (char-downcase? c)
+  (char<=? #\a c #\z))
 
 ;; =============================================================================
 ;;; too hard
