@@ -6,6 +6,7 @@
 
 (require
   (prefix-in tr- typed/racket/base)
+  (prefix-in f- soft-contract/fake-contract)
   (for-syntax
     racket/base
     syntax/parse))
@@ -16,8 +17,10 @@
   ;; TODO https://github.com/philnguyen/soft-contract/issues/82
   ;; syntax->datum
   (syntax-parse stx
-   #:literals (tr--> tr-Any tr-True tr-False tr-Real tr-Natural tr-Integer tr-String tr-Pairof tr-Listof tr-Vectorof tr-Boolean tr-HashTable)
-   [(tr--> . arg*)
+   #:literals (tr--> f-->
+               tr-Any tr-True tr-False tr-Real tr-Natural tr-Integer tr-U
+               tr-String tr-Pairof tr-Listof tr-Vectorof tr-Boolean tr-HashTable)
+   [((~or tr--> f-->) . arg*)
     (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
    [(tr-U . t*)
     (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
