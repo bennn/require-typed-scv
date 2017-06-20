@@ -7,6 +7,8 @@
 (require
   (prefix-in tr- typed/racket/base)
   (prefix-in f- soft-contract/fake-contract)
+  (only-in require-typed-scv/private/define-type
+    lookup-type-alias)
   (for-syntax
     racket/base
     require-typed-scv/private/log
@@ -41,7 +43,11 @@
    [(~literal tr-Void) 'void]
    [(~datum #f) '#f]
    [x:id
+    #:when (lookup-type-alias #'x)
+    (syntax->type-rep (lookup-type-alias #'x))]
+   [x:id
     #:when (char-downcase? (first-char (symbol->string (syntax-e #'x))))
+    ;; TODO massive hack
     (log-require-typed-scv-error "assuming '~a' is valid racket/contract" (syntax-e #'x))
     (syntax-e #'x)]
    [_
