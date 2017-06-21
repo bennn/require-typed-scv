@@ -3,10 +3,13 @@ fsm
 
 FAILURE
 
+Not sure why
+
 ```
-$ raco scv main.rkt
-Assertion failed on #f
-  context...:
+require-typed-scv: running SCV on 'population.rkt' with spec '((build-random-population (-> exact-nonnegative-integer? (cons/c (vectorof automaton?) (vectorof automaton?)))) (population-payoffs (-> (cons/c (vectorof automaton?) (vectorof automaton?)) (listof exact-nonnegative-integer?))) (death-birth (-> (cons/c (vectorof automaton?) (vectorof automaton?)) exact-nonnegative-integer? (or/c #f real?) (cons/c (vectorof automaton?) (vectorof automaton?)))) (match-up* (-> (cons/c (vectorof automaton?) (vectorof automaton?)) exact-nonnegative-integer? (cons/c (vectorof automaton?) (vectorof automaton?)))))'
+require-typed-scv: failed to verify 'population.rkt'
+require-typed-scv: running SCV on 'utilities.rkt' with spec '((relative-average (-> (listof real?) real? real?)))'
+require-typed-scv: failed to verify 'utilities.rkt'
 ```
 
 

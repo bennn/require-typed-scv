@@ -28,7 +28,8 @@
          (only-in racket/list   empty?)
          (only-in racket/string string-join)
          (for-syntax racket/base racket/syntax)
-         "base/typed-zo-structs.rkt")
+         compiler/zo-structs
+         #;"base/typed-zo-structs.rkt")
 
 ;; -----------------------------------------------------------------------------
 
