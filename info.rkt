@@ -7,4 +7,4 @@
 (define pkga-authors '(ben))
 (define scribblings '(("docs/require-typed-scv.scrbl" ())))
 (define test-omit-paths '("./test/gtp"))
-(define compile-omit-paths '("test/gtp"))
+(define compile-omit-paths '("test"))
