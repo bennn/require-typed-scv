@@ -4,7 +4,7 @@
 (provide
   (contract-out
     [verify
-     (-> (and/c string? file-exists?) (listof (list/c symbol? any/c)) boolean?)]
+     (-> (and/c string? file-exists?) (listof contract-out-sexp?) boolean?)]
     ;; (verify mod-path id+ctc*)
     ;; Apply Soft Contract verification to `mod-path`,
     ;;  with the goal of showing each id meets the associated spec in `id+ctc*`
@@ -24,6 +24,9 @@
     string-trim))
 
 ;; =============================================================================
+
+(define contract-out-sexp?
+  any/c)
 
 (define (verify mod-path id+ctc*)
   (call-with-tmpfile mod-path

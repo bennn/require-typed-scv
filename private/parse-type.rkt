@@ -2,7 +2,8 @@
 
 (provide
   (for-syntax
-    syntax->type-rep))
+    syntax->type-rep
+    get-unbound-types))
 
 (require
   (prefix-in tr- typed/racket/base)
@@ -12,9 +13,13 @@
   (for-syntax
     racket/base
     require-typed-scv/private/log
+    syntax/id-set
     syntax/parse))
 
 ;; =============================================================================
+
+(define-for-syntax UNBOUND-TYPE*
+  (mutable-free-id-set))
 
 (define-for-syntax (syntax->type-rep stx)
   ;; TODO https://github.com/philnguyen/soft-contract/issues/82
@@ -46,9 +51,7 @@
     #:when (lookup-type-alias #'x)
     (syntax->type-rep (lookup-type-alias #'x))]
    [x:id
-    #:when (char-downcase? (first-char (symbol->string (syntax-e #'x))))
-    ;; TODO massive hack
-    (log-require-typed-scv-error "assuming '~a' is valid racket/contract" (syntax-e #'x))
+    (free-id-set-add! UNBOUND-TYPE* #'x)
     (syntax-e #'x)]
    [_
     (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))]))
@@ -60,6 +63,11 @@
 
 (define-for-syntax (char-downcase? c)
   (char<=? #\a c #\z))
+
+(define-for-syntax (get-unbound-types bound-ty*)
+  (for ((t (in-list bound-ty*)))
+    (free-id-set-remove! UNBOUND-TYPE* t))
+  (free-id-set->list UNBOUND-TYPE*))
 
 ;; =============================================================================
 ;;; too hard
