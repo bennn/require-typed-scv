@@ -2,8 +2,7 @@
 
 (provide
   (for-syntax
-    syntax->type-rep
-    get-unbound-types))
+    syntax->type-rep))
 
 (require
   (prefix-in tr- typed/racket/base)
@@ -14,47 +13,46 @@
     racket/base
     require-typed-scv/private/log
     syntax/id-set
-    syntax/parse))
+    syntax/parse
+    (only-in syntax/id-table
+      free-id-table-ref)))
 
 ;; =============================================================================
 
-(define-for-syntax UNBOUND-TYPE*
-  (mutable-free-id-set))
-
-(define-for-syntax (syntax->type-rep stx)
+(define-for-syntax (syntax->type-rep stx extra-type-map*)
   ;; TODO https://github.com/philnguyen/soft-contract/issues/82
   ;; syntax->datum
-  (syntax-parse stx
-   [((~or (~literal tr-->) (~literal f-->)) . arg*) (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
-   [((~or (~literal values) (~literal tr-Values)) . t*) (cons 'values (map syntax->type-rep (syntax-e #'t*)))]
-   [((~literal tr-HashTable) k v) (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
-   [((~literal tr-Listof) t) (list 'listof (syntax->type-rep #'t))]
-   [((~literal tr-Pairof) a b) (list 'cons/c (syntax->type-rep #'a) (syntax->type-rep #'b))]
-   [((~literal tr-U) . t*) (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
-   [((~literal tr-Vector) . t*) (cons 'vector/c (map syntax->type-rep (syntax-e #'t*)))]
-   [((~literal tr-Vectorof) t) (list 'vectorof (syntax->type-rep #'t))]
-   [(~literal tr-Any) 'any/c]
-   [(~literal tr-Boolean) 'boolean?]
-   [(~literal tr-False) '#f]
-   [(~literal tr-Float) 'flonum?]
-   [(~literal tr-Integer) 'integer?]
-   [(~literal tr-Natural) 'exact-nonnegative-integer?]
-   [(~literal tr-Path) 'path?]
-   [(~literal tr-Path-String) 'path-string?]
-   [(~literal tr-Real) 'real?]
-   [(~literal tr-String) 'string?]
-   [(~literal tr-Symbol) 'symbol?]
-   [(~literal tr-True) '#t]
-   [(~literal tr-Void) 'void]
-   [(~datum #f) '#f]
-   [x:id
-    #:when (lookup-type-alias #'x)
-    (syntax->type-rep (lookup-type-alias #'x))]
-   [x:id
-    (free-id-set-add! UNBOUND-TYPE* #'x)
-    (syntax-e #'x)]
-   [_
-    (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))]))
+  (let syntax->type-rep ([stx stx])
+    (syntax-parse stx
+     [((~or (~literal tr-->) (~literal f-->)) . arg*) (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
+     [((~or (~literal values) (~literal tr-Values)) . t*) (cons 'values (map syntax->type-rep (syntax-e #'t*)))]
+     [((~literal tr-HashTable) k v) (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
+     [((~literal tr-Listof) t) (list 'listof (syntax->type-rep #'t))]
+     [((~literal tr-Pairof) a b) (list 'cons/c (syntax->type-rep #'a) (syntax->type-rep #'b))]
+     [((~literal tr-U) . t*) (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
+     [((~literal tr-Vector) . t*) (cons 'vector/c (map syntax->type-rep (syntax-e #'t*)))]
+     [((~literal tr-Vectorof) t) (list 'vectorof (syntax->type-rep #'t))]
+     [(~literal tr-Any) 'any/c]
+     [(~literal tr-Boolean) 'boolean?]
+     [(~literal tr-False) '#f]
+     [(~literal tr-Float) 'flonum?]
+     [(~literal tr-Integer) 'integer?]
+     [(~literal tr-Natural) 'exact-nonnegative-integer?]
+     [(~literal tr-Path) 'path?]
+     [(~literal tr-Path-String) 'path-string?]
+     [(~literal tr-Real) 'real?]
+     [(~literal tr-String) 'string?]
+     [(~literal tr-Symbol) 'symbol?]
+     [(~literal tr-True) '#t]
+     [(~literal tr-Void) 'void]
+     [(~datum #f) '#f]
+     [x:id
+      #:when (lookup-type-alias #'x)
+      (syntax->type-rep (lookup-type-alias #'x))]
+     [x:id
+      (free-id-table-ref extra-type-map* #'x (lambda () (raise-user-error "unbound type" (syntax-e #'x))))]
+     [_
+      (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))])))
 
 (define-for-syntax (first-char str)
   (if (zero? (string-length str))
@@ -63,11 +61,6 @@
 
 (define-for-syntax (char-downcase? c)
   (char<=? #\a c #\z))
-
-(define-for-syntax (get-unbound-types bound-ty*)
-  (for ((t (in-list bound-ty*)))
-    (free-id-set-remove! UNBOUND-TYPE* t))
-  (free-id-set->list UNBOUND-TYPE*))
 
 ;; =============================================================================
 ;;; too hard
