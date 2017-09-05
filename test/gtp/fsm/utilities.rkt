@@ -4,9 +4,10 @@
 
 
 (provide
- #;sum
- #;relative-average
- (contract-out ;;bg: SCV needs contract-out
+ sum
+ relative-average
+ choose-randomly
+ #;(contract-out ;;bg: SCV needs contract-out
    (relative-average
     (-> (listof real?) real? real?))
    (choose-randomly

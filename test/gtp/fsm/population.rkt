@@ -11,7 +11,7 @@
 )
 
 ;; =============================================================================
-(require require-typed-check
+(require
  "automata.rkt"
  "utilities.rkt"
 )

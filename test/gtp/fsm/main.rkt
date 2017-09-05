@@ -33,14 +33,15 @@
   (-> Automaton Automaton))
 )
 ;; -- end automata-adapted
+;; TODO needs a hack for now, to get `automaton?`
 (require/typed/scv "population.rkt"
  (build-random-population
-  (-> Natural (Pairof (Vectorof Automaton) (Vectorof Automaton))))
- (population-payoffs (-> (Pairof (Vectorof Automaton) (Vectorof Automaton)) [Listof Natural]))
+  (-> Natural (Pairof (Vectorof automaton?) (Vectorof automaton?))))
+ (population-payoffs (-> (Pairof (Vectorof automaton?) (Vectorof automaton?)) [Listof Natural]))
  (death-birth
-  (-> (Pairof (Vectorof Automaton) (Vectorof Automaton)) Natural (U False Real) (Pairof (Vectorof Automaton) (Vectorof Automaton))))
+  (-> (Pairof (Vectorof automaton?) (Vectorof automaton?)) Natural (U False Real) (Pairof (Vectorof automaton?) (Vectorof automaton?))))
  (match-up*
-  (-> (Pairof (Vectorof Automaton) (Vectorof Automaton)) Natural (Pairof (Vectorof Automaton) (Vectorof Automaton))))
+  (-> (Pairof (Vectorof automaton?) (Vectorof automaton?)) Natural (Pairof (Vectorof automaton?) (Vectorof automaton?))))
 )
 ;(require/typed/scv "population.rkt"
 ; (build-random-population
