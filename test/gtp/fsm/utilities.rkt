@@ -4,11 +4,13 @@
 
 
 (provide
- sum
- relative-average
- (contract-out
+ #;sum
+ #;relative-average
+ (contract-out ;;bg: SCV needs contract-out
+   (relative-average
+    (-> (listof real?) real? real?))
    (choose-randomly
-    (-> [listof exact-nonnegative-integer?] exact-nonnegative-integer? (or/c #f real?)
+    (-> [listof exact-nonnegative-integer?] exact-nonnegative-integer? (or/c boolean? real?)
         [listof exact-nonnegative-integer?]))))
 
 ;; =============================================================================
@@ -18,19 +20,22 @@
 
 
 (define (relative-average l w)
+  (define z (length l))
   (exact->inexact
    (/ (sum l)
-      w (length l))))
+      (if (zero? w) (error 'BG) w)
+      (if (zero? z) (error 'BG) z))))
 
 ;; -----------------------------------------------------------------------------
 
 (define (choose-randomly probabilities speed q)
   (define %s (accumulated-%s probabilities))
   (for/list ([n (in-range speed)])
-    [define r (or q (random))]
+    [define r (if (boolean? q) (random) q)]
     ;; population is non-empty so there will be some i such that ...
     (let loop  ([%s  %s])
       (cond
+        [(empty? %s) (error 'BG)]
         [(< r (first %s)) 0]
         [else (add1 (loop (rest %s)))]))
     #;
@@ -47,4 +52,11 @@
       [(empty? payoffs) '()]
       [else (define nxt (+ so-far (first payoffs)))
             (cons
-             (/ nxt total) (relative->absolute (rest payoffs) nxt))])))
+             (safe-quotient nxt total) (relative->absolute (rest payoffs) nxt))])))
+
+;;bg added
+(define (safe-quotient a b)
+  (if (zero? b)
+    (error 'BG)
+    (quotient a b)))
+
