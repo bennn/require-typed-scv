@@ -1,7 +1,32 @@
 #lang typed/racket/base
 
-(require require-typed-scv
-         "typed-data.rkt")
+(require require-typed-scv)
+
+;; -----------------------------------------------------------------------------
+;; BEGIN typed-data.rkt
+
+(require/typed "data.rkt"
+  [#:struct Array ([shape : Indexes]
+                   [size : Integer]
+                   [strict? : (Boxof Boolean)]
+                   [strict! : (-> Void)]
+                   [unsafe-proc : (-> Indexes Float)])]
+  [#:struct (Settable-Array Array) ([set-proc : (Indexes Float -> Void)])]
+  [#:struct (Mutable-Array Settable-Array) ([data : (Vectorof Float)])])
+
+(define-type Indexes (Vectorof Integer))
+(define-type In-Indexes Indexes)
+
+;; From mix: A Weighted-Signal is a (List (Array Float) Real)
+(define-type Weighted-Signal (List Array Real))
+
+;; drum patterns are simply lists with either O (bass drum), X (snare) or
+;; #f (pause)
+(define-type Drum-Symbol (U 'O 'X #f))
+(define-type Pattern (Listof Drum-Symbol))
+
+;; END typed-data.rkt
+;; -----------------------------------------------------------------------------
 
 (require/typed/scv "sequencer.rkt"
   [note (-> Symbol Natural Natural (Pairof Natural Natural))]
