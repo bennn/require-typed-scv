@@ -3,6 +3,10 @@ gtp
 
 Configurations from the gradual-typing-performance project
 
+TODO
+- run raco setup scv
+- try trie-vector & zordoz
+
 | benchmark    | status                       |
 |--------------+------------------------------|
 | fsm          | debug 'population.rkt'       |
@@ -10,7 +14,7 @@ Configurations from the gradual-typing-performance project
 | mbta         | class                        |
 | morsecode    | OK                           |
 | quadMB       | class                        |
-| sieve        | ?                            |
+| sieve        | debug 'main.rkt'             |
 | snake        | -                            |
 | stack        | OK                           |
 | synth        | variable-reference-constant  |
