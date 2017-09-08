@@ -16,5 +16,5 @@ Configurations from the gradual-typing-performance project
 | synth        | variable-reference-constant  |
 | tetris       | debug 'data.rkt', aliases    |
 | trie-vector  | hash/c                       |
-| zombie       | rec types???                 |
+| zombie       | ben needs rec-types          |
 | zordoz       | hash/c                       |

@@ -1,12 +1,12 @@
 #lang typed/racket/base
 
-(require require-typed-check)
+(require require-typed-scv)
 
-(require/typed/check "image.rkt"
+(require/typed/scv "image.rkt"
   (#:struct image ((impl : Any)))
-  (empty-scene (-> Real Real Image))
-  (place-image (-> Image Real Real Image Image))
-  (circle (-> Real String String Image))
+  (empty-scene (-> Real Real image))
+  (place-image (-> image Real Real image image))
+  (circle (-> Real String String image))
 )
 (define-type Image image)
 

@@ -1,10 +1,10 @@
 #lang typed/racket/base
 
 (require
-  require-typed-check
+  require-typed-scv
   "image-adapted.rkt"
 )
-(require/typed/check "zombie.rkt"
+(require/typed/scv "zombie.rkt"
   (w0 World)
   (world-on-mouse (-> World (-> Real Real String World)))
   (world-on-tick (-> World (-> World)))
