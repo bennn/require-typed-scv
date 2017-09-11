@@ -27,6 +27,7 @@
      [((~or (~literal tr-->) (~literal f-->)) . arg*) (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
      [((~or (~literal values) (~literal tr-Values)) . t*) (cons 'values (map syntax->type-rep (syntax-e #'t*)))]
      [((~literal tr-HashTable) k v) (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
+     [(~literal tr-HashTableTop) 'hash?]
      [((~literal tr-Listof) t) (list 'listof (syntax->type-rep #'t))]
      [((~literal tr-Pairof) a b) (list 'cons/c (syntax->type-rep #'a) (syntax->type-rep #'b))]
      [((~literal tr-U) . t*) (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
