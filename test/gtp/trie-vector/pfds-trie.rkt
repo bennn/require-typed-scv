@@ -4,8 +4,13 @@
 
 (require racket/match)
 
-(define-struct Mt ())
-(define-struct Some (elem))
+;(define-struct Mt ())
+;(define-struct Some (elem))
+
+(define (make-Mt) #f)
+(define (Mt? x) (not x))
+(define (Some-elem x) x)
+(define (make-Some x) x)
 
 (define (make-Trie opt map)
   (vector opt map))
@@ -16,8 +21,8 @@
 ;; --- end edit
 
 (define (empty) 
-  (make-Trie (make-Mt)
-             (hash) #;(make-immutable-hash null)))
+  (make-Trie (make-Mt) 
+             (make-immutable-hash null)))
 
 (define (lookup keys map)
   (if (null? keys)
@@ -25,33 +30,30 @@
         (if (Mt? opt)
             (error 'lookup "given key not found in the trie")
             (Some-elem opt)))
-      (let ([fst (car keys)]
-            [hash (Trie-map map)])
-        ;with-handlers
-        ;    ([exn:fail? (lambda (error?) 
-        ;                  (error 'lookup "given key not found in the trie"))])
-          (lookup (cdr keys) (hash-ref hash fst)))))
+      (let* ([fst (car keys)]
+             [hash (Trie-map map)]
+             [val (hash-ref hash fst)]) ;;bg might error
+          (lookup (cdr keys) val))))
 
 (define (bind lok v map)
   (define-values [fst rst]
     (if (null? lok)
       (error 'bg:empty-list)
       (values (car lok) (cdr lok))))
-  (let ([hash (Trie-map map)]
-        [opt (Trie-opt map)])
-    (make-Trie opt hash #;(hash-set hash fst 
-                             (with-handlers 
-                                      ([exn:fail? 
-                                        (lambda (error?) (build v rst))])
-                                    (bind rst v (hash-ref hash fst)))))))
+  (let* ([hash (Trie-map map)]
+         [opt (Trie-opt map)]
+         [tree (let ([prev (hash-ref hash fst (lambda () #f))])
+                 (if (and prev (not (null? rst)))
+                   (bind rst v prev)
+                   (build v rst)))])
+    (make-Trie opt (hash-set hash fst tree))))
 
 (define (build val lstk)
   (if (null? lstk)
       (make-Trie (make-Some val) 
-                 (hash) #;(make-immutable-hash null) )
+                 (make-immutable-hash null))
       (make-Trie (make-Mt) 
-                 (hash (car lstk) (build val (cdr lstk)))
-                 #;(make-immutable-hash 
+                 (make-immutable-hash 
                   (list (cons (car lstk) (build val (cdr lstk))))))))
 
 (define (trie lst)
@@ -74,14 +76,15 @@
 
 (define (insert lstv lstk tri)
   (match (list lstv lstk)
-    [(list '() '()) tri]
+    [(list null null) tri]
     [(list (cons v vs) (cons (cons k ks) rstk))
      (let* ([hash (Trie-map tri)]
-            [tree ;with-handlers ([exn:fail? (lambda (error?) 
-                  ;                                  (build v ks))])
-                         (go-deep (hash-ref hash k) ks v) ])
+            [tree (let ([prev (hash-ref hash k (lambda () #f))])
+                    (if prev
+                      (go-deep prev ks v)
+                      (build v ks)))])
        (insert vs rstk
-               (make-Trie (Trie-opt tri) hash #;(hash-set hash k tree))))]
+               (make-Trie (Trie-opt tri) (hash-set hash k tree))))]
     [_ (error 'bg:bad-match)]))
 
 (define (tries lstv lstk)
@@ -94,7 +97,6 @@
       (let* ([hash (Trie-map tri)]
              [k (car lstk)]
              [ks (cdr lstk)]
-             [insert ;with-handlers
-                     ;         ([exn:fail? (lambda (error?) (build val ks))])
-                            (go-deep (hash-ref hash k) ks val)])
-        (make-Trie (Trie-opt tri) hash #;(hash-set hash k insert)))))
+             [v (hash-ref hash k)]
+             [insert (go-deep v ks val)])
+        (make-Trie (Trie-opt tri) (hash-set hash k insert)))))
