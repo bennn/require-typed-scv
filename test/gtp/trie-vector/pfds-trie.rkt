@@ -33,9 +33,11 @@
           (lookup (cdr keys) (hash-ref hash fst)))))
 
 (define (bind lok v map)
+  (define-values [fst rst]
+    (if (null? lok)
+      (error 'bg:empty-list)
+      (values (car lok) (cdr lok))))
   (let ([hash (Trie-map map)]
-        [fst (car lok)]
-        [rst (cdr lok)]
         [opt (Trie-opt map)])
     (make-Trie opt hash #;(hash-set hash fst 
                              (with-handlers 
@@ -57,9 +59,11 @@
 
 (define (get-vals lst)
   (define (local ctr lstk)
-    (if (null? (cdr lstk))
-        (cons ctr null)
-        (cons ctr (local (add1 ctr) (cdr lstk)))))
+    (if (null? lstk)
+      (error 'bg:empty-list)
+      (if (null? (cdr lstk))
+          (cons ctr null)
+          (cons ctr (local (add1 ctr) (cdr lstk))))))
   (local 1 lst))
 
 ;; While creating the tree, 
@@ -77,7 +81,8 @@
                   ;                                  (build v ks))])
                          (go-deep (hash-ref hash k) ks v) ])
        (insert vs rstk
-               (make-Trie (Trie-opt tri) hash #;(hash-set hash k tree))))]))
+               (make-Trie (Trie-opt tri) hash #;(hash-set hash k tree))))]
+    [_ (error 'bg:bad-match)]))
 
 (define (tries lstv lstk)
   (insert lstv lstk (empty)))
