@@ -19,6 +19,6 @@ TODO
 | stack        | OK                           |
 | synth        | variable-reference-constant  |
 | tetris       | debug 'data.rkt', aliases    |
-| trie-vector  | hash/c                       |
+| trie-vector  | semantic bug                 |
 | zombie       | ben needs rec-types          |
-| zordoz       | hash/c                       |
+| zordoz       | remove compiler/zo macros    |
