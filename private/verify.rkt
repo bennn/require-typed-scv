@@ -4,8 +4,8 @@
 (provide
   (contract-out
     [verify
-     (-> (and/c string? file-exists?) (listof contract-out-sexp?) boolean?)]
-    ;; (verify mod-path id+ctc*)
+     (-> (and/c string? file-exists?) (listof contract-out-sexp?) (listof define-sexp?) boolean?)]
+    ;; (verify mod-path extra-define* id+ctc*)
     ;; Apply Soft Contract verification to `mod-path`,
     ;;  with the goal of showing each id meets the associated spec in `id+ctc*`
 ))
@@ -28,14 +28,17 @@
 (define contract-out-sexp?
   any/c)
 
-(define (verify mod-path id+ctc*)
+(define define-sexp?
+  any/c)
+
+(define (verify mod-path id+ctc* extra-define*)
   (call-with-tmpfile mod-path
     (λ (mod-path.bak)
-      (copy/scv mod-path mod-path.bak id+ctc*)
+      (copy/scv mod-path mod-path.bak id+ctc* extra-define*)
       (log-require-typed-scv-info "running SCV on '~a' with spec '~a'" mod-path id+ctc*)
       (scv-safe? (run-scv mod-path.bak)))))
 
-(define (copy/scv src-name dst-name id+ctc)
+(define (copy/scv src-name dst-name id+ctc extra-define*)
   (call-with-input-file src-name
     (λ (src-port)
       (call-with-output-file dst-name
@@ -47,6 +50,7 @@
           (copy-without-provides src-port dst-port)
           ;; print verification condition
           (newline dst-port)
+          (for-each displayln extra-define*)
           ;;(displayln "(require require-typed-scv/private/fake-type)" dst-port)
           (displayln "(require racket/contract)" dst-port)
           (displayln "(provide (contract-out" dst-port)

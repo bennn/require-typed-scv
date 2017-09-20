@@ -14,6 +14,10 @@
     require-typed-scv/private/log
     syntax/id-set
     syntax/parse
+    (only-in racket/set
+      mutable-seteq
+      set-add!
+      set-member?)
     (only-in syntax/id-table
       free-id-table-ref)))
 
@@ -22,38 +26,54 @@
 (define-for-syntax (syntax->type-rep stx extra-type-map*)
   ;; TODO https://github.com/philnguyen/soft-contract/issues/82
   ;; syntax->datum
-  (let syntax->type-rep ([stx stx])
-    (syntax-parse stx
-     [((~or (~literal tr-->) (~literal f-->)) . arg*) (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
-     [((~or (~literal values) (~literal tr-Values)) . t*) (cons 'values (map syntax->type-rep (syntax-e #'t*)))]
-     [((~literal tr-HashTable) k v) (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
-     [(~literal tr-HashTableTop) 'hash?]
-     [((~literal tr-Listof) t) (list 'listof (syntax->type-rep #'t))]
-     [((~literal tr-Pairof) a b) (list 'cons/c (syntax->type-rep #'a) (syntax->type-rep #'b))]
-     [((~literal tr-U) . t*) (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
-     [((~literal tr-Vector) . t*) (cons 'vector/c (map syntax->type-rep (syntax-e #'t*)))]
-     [((~literal tr-Vectorof) t) (list 'vectorof (syntax->type-rep #'t))]
-     [(~literal tr-Any) 'any/c]
-     [(~literal tr-Boolean) 'boolean?]
-     [(~literal tr-False) '#f]
-     [(~literal tr-Float) 'flonum?]
-     [(~literal tr-Integer) 'integer?]
-     [(~literal tr-Natural) 'exact-nonnegative-integer?]
-     [(~literal tr-Path) 'path?]
-     [(~literal tr-Path-String) 'path-string?]
-     [(~literal tr-Real) 'real?]
-     [(~literal tr-String) 'string?]
-     [(~literal tr-Symbol) 'symbol?]
-     [(~literal tr-True) '#t]
-     [(~literal tr-Void) 'void]
-     [(~datum #f) '#f]
-     [x:id
-      #:when (lookup-type-alias #'x)
-      (syntax->type-rep (lookup-type-alias #'x))]
-     [x:id
-      (free-id-table-ref extra-type-map* #'x (lambda () (raise-user-error "unbound type" (syntax-e #'x))))]
-     [_
-      (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))])))
+  (define rec* (make-hasheq))
+  (define ctc
+    (let syntax->type-rep ([stx stx])
+      (syntax-parse stx
+       [((~or (~literal tr-->) (~literal f-->)) . arg*) (cons '-> (map syntax->type-rep (syntax-e #'arg*)))]
+       [((~or (~literal values) (~literal tr-Values)) . t*) (cons 'values (map syntax->type-rep (syntax-e #'t*)))]
+       [((~literal tr-HashTable) k v) (list 'hash/c (syntax->type-rep #'k) (syntax->type-rep #'v))]
+       [(~literal tr-HashTableTop) 'hash?]
+       [((~literal tr-Listof) t) (list 'listof (syntax->type-rep #'t))]
+       [((~literal tr-Pairof) a b) (list 'cons/c (syntax->type-rep #'a) (syntax->type-rep #'b))]
+       [((~literal tr-U) . t*) (cons 'or/c (map syntax->type-rep (syntax-e #'t*)))]
+       [((~literal tr-Vector) . t*) (cons 'vector/c (map syntax->type-rep (syntax-e #'t*)))]
+       [((~literal tr-Vectorof) t) (list 'vectorof (syntax->type-rep #'t))]
+       [((~literal tr-Rec) ?name:id t)
+        (define name (syntax-e #'?name))
+        (hash-set! rec* name (syntax->type-rep #'t))
+        name]
+       [((~literal tr-quote) x) (list 'quote (syntax-e #'x))]
+       [(~literal tr-Any) 'any/c]
+       [(~literal tr-Boolean) 'boolean?]
+       [(~literal tr-False) '#f]
+       [(~literal tr-Float) 'flonum?]
+       [(~literal tr-Integer) 'integer?]
+       [(~literal tr-Natural) 'exact-nonnegative-integer?]
+       [(~literal tr-Path) 'path?]
+       [(~literal tr-Path-String) 'path-string?]
+       [(~literal tr-Real) 'real?]
+       [(~literal tr-String) 'string?]
+       [(~literal tr-Symbol) 'symbol?]
+       [(~literal tr-True) '#t]
+       [(~literal tr-Void) 'void]
+       [(~datum #f) '#f]
+       [(~datum automaton?) 'automaton?] ;; TODO remove
+       [(~datum hash?) 'hash?] ;; TODO remove
+       [x:id
+        #:when (hash-has-key? rec* (syntax-e #'x))
+        (list 'recursive-contract (syntax-e #'x) '#:chaperone)]
+       [x:id
+        #:when (lookup-type-alias #'x)
+        (syntax->type-rep (lookup-type-alias #'x))]
+       [x:id
+        (free-id-table-ref extra-type-map* #'x (lambda () (raise-user-error "unbound type" (syntax-e #'x))))]
+       [_
+        (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))])))
+  (define extra
+    (for/list ([(k v) (in-hash rec*)])
+      `(define ,k ,v)))
+  (values ctc extra))
 
 (define-for-syntax (first-char str)
   (if (zero? (string-length str))

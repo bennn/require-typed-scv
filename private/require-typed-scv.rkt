@@ -75,7 +75,7 @@
      [(_ mod-path:str c*:expr ...)
       #:when (let* ([mp (syntax->string #'mod-path)]
                     [cwd (syntax->directory stx)]
-                    [co-clause*
+                    [co-clause*+extra-defs
                      (let* ([rtc*
                              (for/list ([c (in-list (syntax-e #'(c* ...)))])
                                (syntax-parse c
@@ -89,7 +89,7 @@
                        (require-typed-clause*->contract-out-clause* rtc* extra-type-map))]
                     [ok?
                      (parameterize ([current-directory cwd])
-                       (verify mp co-clause*))]
+                       (verify mp (car co-clause*+extra-defs) (cdr co-clause*+extra-defs)))]
                     [_log
                      (if ok?
                        (log-require-typed-scv-info "successfully verified '~a'" mp)
@@ -113,25 +113,44 @@
       acc])))
 
 (define-for-syntax (require-typed-clause*->contract-out-clause* rtc* extra-type-map)
-  (for/list ([rtc (in-list rtc*)])
-    (require-typed-clause->contract-out-clause rtc extra-type-map)))
+  (define-values [co-clause* extra-defs]
+    (for/fold ([co-clause* '()]
+               [extra-defs '()])
+              ([rtc (in-list rtc*)])
+      (define-values [co extra]
+        (require-typed-clause->contract-out-clause rtc extra-type-map))
+      (values (cons co co-clause*) (append extra extra-defs))))
+  (cons (reverse co-clause*) extra-defs))
 
 (define-for-syntax (require-typed-clause->contract-out-clause rtc extra-type-map)
   (match rtc
    [(rtnormal name type)
-    `(,(syntax->symbol name) ,(syntax->type-rep type extra-type-map))]
+    (define-values [ctc extra] (syntax->type-rep type extra-type-map))
+    (define clause `(,(syntax->symbol name) ,ctc))
+    (values clause extra)]
    [(rtrename original-name new-name type)
-    `(rename ,(syntax->symbol original-name)
-             ,(syntax->symbol new-name)
-             ,(syntax->type-rep type extra-type-map))]
+    (define-values [ctc extra] (syntax->type-rep type extra-type-map))
+    (define clause
+      `(rename ,(syntax->symbol original-name)
+               ,(syntax->symbol new-name)
+               ,ctc))
+    (values clause extra)]
    [(rtstruct name parent field*)
-    `(struct ,(if parent
-                `(,(syntax->symbol name) ,(syntax->symbol parent))
-                (syntax->symbol name))
-             ,(for/list ([ft (in-list field*)])
-                `(,(syntax->symbol (car ft)) ,(syntax->type-rep (cdr ft) extra-type-map))))]
+    (define-values [field-ctc* extra]
+      (for/fold ([f* '()]
+                 [extra-defs '()])
+                ([ft (in-list field*)])
+        (define-values [ctc extra] (syntax->type-rep (cdr ft) extra-type-map))
+        (define clause `(,(syntax->symbol (car ft)) ,ctc))
+        (values (cons clause f*) (append extra extra-defs))))
+    (define clause
+      `(struct ,(if parent
+                  `(,(syntax->symbol name) ,(syntax->symbol parent))
+                  (syntax->symbol name))
+               ,(reverse field-ctc*)))
+    (values clause extra)]
    [(rtopaque type pred)
-    `(,(syntax->symbol pred) (-> any/c boolean?))]
+    (values `(,(syntax->symbol pred) (-> any/c boolean?)) '())]
    [_
     (raise-argument-error 'require-typed-clause->contract-out-clause "require-typed-clause?" 0 rtc extra-type-map)]))
 
