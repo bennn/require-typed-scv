@@ -73,6 +73,7 @@
     (raise-user-error 'require/typed/scv "must be called in a typed context")
     (syntax-parse stx
      [(_ mod-path:str c*:expr ...)
+      #:when (log-require-typed-scv-debug "parsing (require/typed/scv ~a ....)" (syntax-e #'mod-path))
       #:when (let* ([mp (syntax->string #'mod-path)]
                     [cwd (syntax->directory stx)]
                     [co-clause*+extra-defs
@@ -119,10 +120,11 @@
               ([rtc (in-list rtc*)])
       (define-values [co extra]
         (require-typed-clause->contract-out-clause rtc extra-type-map))
-      (values (cons co co-clause*) (append extra extra-defs))))
-  (cons (reverse co-clause*) extra-defs))
+      (values (cons co co-clause*) (append (reverse extra) extra-defs))))
+  (cons (reverse co-clause*) (reverse extra-defs)))
 
 (define-for-syntax (require-typed-clause->contract-out-clause rtc extra-type-map)
+  (log-require-typed-scv-debug "making contract-out clause ~a" rtc)
   (match rtc
    [(rtnormal name type)
     (define-values [ctc extra] (syntax->type-rep type extra-type-map))

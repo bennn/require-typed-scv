@@ -5,6 +5,7 @@
     syntax->type-rep))
 
 (require
+  (only-in typed/racket/base Rec)
   (prefix-in tr- typed/racket/base)
   (prefix-in f- soft-contract/fake-contract)
   (only-in require-typed-scv/private/define-type
@@ -17,6 +18,7 @@
     (only-in racket/set
       mutable-seteq
       set-add!
+      set-remove!
       set-member?)
     (only-in syntax/id-table
       free-id-table-ref)))
@@ -26,7 +28,9 @@
 (define-for-syntax (syntax->type-rep stx extra-type-map*)
   ;; TODO https://github.com/philnguyen/soft-contract/issues/82
   ;; syntax->datum
+  (log-require-typed-scv-debug "(syntax->type-rep ~a)" (syntax->datum stx))
   (define rec* (make-hasheq))
+  (define free-vars (mutable-seteq))
   (define ctc
     (let syntax->type-rep ([stx stx])
       (syntax-parse stx
@@ -41,7 +45,10 @@
        [((~literal tr-Vectorof) t) (list 'vectorof (syntax->type-rep #'t))]
        [((~literal tr-Rec) ?name:id t)
         (define name (syntax-e #'?name))
-        (hash-set! rec* name (syntax->type-rep #'t))
+        (begin
+          (set-add! free-vars name)
+          (hash-set! rec* name (syntax->type-rep #'t))
+          (set-remove! free-vars name))
         name]
        [((~literal tr-quote) x) (list 'quote (syntax-e #'x))]
        [(~literal tr-Any) 'any/c]
@@ -61,13 +68,16 @@
        [(~datum automaton?) 'automaton?] ;; TODO remove
        [(~datum hash?) 'hash?] ;; TODO remove
        [x:id
-        #:when (hash-has-key? rec* (syntax-e #'x))
+        #:when (set-member? free-vars (syntax-e #'x))
         (list 'recursive-contract (syntax-e #'x) '#:chaperone)]
+       [x:id
+        #:when (hash-has-key? rec* (syntax-e #'x))
+        (syntax-e #'x)]
        [x:id
         #:when (lookup-type-alias #'x)
         (syntax->type-rep (lookup-type-alias #'x))]
        [x:id
-        (free-id-table-ref extra-type-map* #'x (lambda () (raise-user-error "unbound type" (syntax-e #'x))))]
+        (free-id-table-ref extra-type-map* #'x (lambda () (raise-user-error 'syntax->type-rep "unbound type" (syntax-e #'x))))]
        [_
         (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))])))
   (define extra

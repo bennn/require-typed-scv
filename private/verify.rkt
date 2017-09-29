@@ -34,6 +34,7 @@
 (define (verify mod-path id+ctc* extra-define*)
   (call-with-tmpfile mod-path
     (λ (mod-path.bak)
+      (log-require-typed-scv-debug "creating tmpfile '~a'" mod-path.bak)
       (copy/scv mod-path mod-path.bak id+ctc* extra-define*)
       (log-require-typed-scv-info "running SCV on '~a' with spec '~a'" mod-path id+ctc*)
       (scv-safe? (run-scv mod-path.bak)))))
@@ -50,7 +51,8 @@
           (copy-without-provides src-port dst-port)
           ;; print verification condition
           (newline dst-port)
-          (for-each displayln extra-define*)
+          (for ([e (in-list extra-define*)])
+            (displayln e dst-port))
           ;;(displayln "(require require-typed-scv/private/fake-type)" dst-port)
           (displayln "(require racket/contract)" dst-port)
           (displayln "(provide (contract-out" dst-port)
