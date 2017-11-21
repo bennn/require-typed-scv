@@ -15,6 +15,16 @@
  (struct-out tetra)
  (struct-out world)
  posn=?)
+
+#;(provide (contract-out
+  (struct block ((x real?) (y real?) (color symbol?)))
+  (struct posn ((x real?) (y real?)))
+  (struct tetra ((center posn?) (blocks (listof block?))))
+  (struct world ((tetra tetra?) (blocks (listof block?))))
+  (posn=? (-> posn? posn? boolean?))
+))
+
+;; ORIGINAL CONTRACTS
 #;
 (provide
  (contract-out
