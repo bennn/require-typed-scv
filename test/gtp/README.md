@@ -9,16 +9,16 @@ TODO
 
 | benchmark    | status                       |
 |--------------+------------------------------|
-| fsm          | debug 'population.rkt'       |
+| fsm          | struct accessor, automat...  |
 | lnm          | depends on TR                |
 | mbta         | class                        |
 | morsecode    | OK                           |
 | quadMB       | class                        |
-| sieve        | debug 'main.rkt'             |
+| sieve        | struct accessor, streams.rkt |
 | snake        | -                            |
 | stack        | OK                           |
-| synth        | variable-reference-constant  |
-| tetris       | debug 'data.rkt', aliases    |
-| trie-vector  | semantic bug                 |
-| zombie       | ben needs rec-types          |
+| synth        | ??? (found scv bug, try again later) |
+| tetris       | struct access                |
+| trie-vector  | OK                           |
+| zombie       | ??? probably struct          |
 | zordoz       | remove compiler/zo macros    |
