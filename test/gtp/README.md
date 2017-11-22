@@ -14,7 +14,7 @@ TODO
 | mbta         | class                        |
 | morsecode    | OK                           |
 | quadMB       | class                        |
-| sieve        | struct accessor, streams.rkt |
+| sieve        | OK                           |
 | snake        | -                            |
 | stack        | OK                           |
 | synth        | ??? (found scv bug, try again later) |

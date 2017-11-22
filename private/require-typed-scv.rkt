@@ -107,7 +107,7 @@
             ([rtc (in-list rtc*)])
     (match rtc
      [(rtstruct name _ _)
-      (free-id-table-set acc name (syntax->symbol name))]
+      (free-id-table-set acc name (gensym (syntax->symbol name)))]
      [(rtopaque type pred)
       (free-id-table-set acc type (syntax->symbol pred))]
      [_
@@ -139,22 +139,48 @@
     (values clause extra)]
    [(rtstruct name parent field*)
     (define-values [field-ctc* extra]
-      (for/fold ([f* '()]
-                 [extra-defs '()])
-                ([ft (in-list field*)])
-        (define-values [ctc extra] (syntax->type-rep (cdr ft) extra-type-map))
-        (define clause `(,(syntax->symbol (car ft)) ,ctc))
-        (values (cons clause f*) (append extra extra-defs))))
+      (let-values ([(r-f e)
+                    (for/fold ([f* '()]
+                               [extra-defs '()])
+                              ([ft (in-list field*)])
+                      (define-values [ctc extra] (syntax->type-rep (cdr ft) extra-type-map))
+                      (define clause `(,(syntax->symbol (car ft)) ,ctc))
+                      (values (cons clause f*) (append extra extra-defs)))])
+        (values (reverse r-f) e)))
+    (define struct/c-def
+      (make-struct/c-def (syntax-e name) (free-id-table-ref extra-type-map name) field-ctc*))
     (define clause
       `(struct ,(if parent
                   `(,(syntax->symbol name) ,(syntax->symbol parent))
                   (syntax->symbol name))
-               ,(reverse field-ctc*)))
-    (values clause extra)]
+               ,field-ctc*))
+    (values clause (append extra (list struct/c-def)))]
    [(rtopaque type pred)
     (values `(,(syntax->symbol pred) (-> any/c boolean?)) '())]
    [_
     (raise-argument-error 'require-typed-clause->contract-out-clause "require-typed-clause?" 0 rtc extra-type-map)]))
+
+(define-for-syntax (make-struct/c-def struct-name ctc-name field-ctc*)
+  (define rec-ctc
+    `(recursive-contract ,ctc-name #:chaperone))
+  `(define ,ctc-name
+     (struct/c ,struct-name .
+       ,(for/list ([name+ctc (in-list field-ctc*)])
+          (define ctc (cadr name+ctc))
+          (tree-replace ctc ctc-name rec-ctc)))))
+
+(define-for-syntax (tree-replace v src tgt)
+  (let loop ([x v])
+    (cond
+     [(and (symbol? x) (xerox-eq? x src))
+      tgt]
+     [(pair? x)
+      (cons (loop (car x)) (loop (cdr x)))]
+     [else
+      x])))
+
+(define-for-syntax (xerox-eq? a b)
+  (string=? (symbol->string a) (symbol->string b)))
 
 (define-for-syntax (syntax->string stx)
   (define v (syntax-e stx))

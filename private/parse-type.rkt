@@ -65,7 +65,6 @@
        [(~literal tr-True) '#t]
        [(~literal tr-Void) 'void]
        [(~datum #f) '#f]
-       [(~datum automaton?) 'automaton?] ;; TODO remove
        [(~datum hash?) 'hash?] ;; TODO remove
        [x:id
         #:when (set-member? free-vars (syntax-e #'x))
@@ -77,7 +76,7 @@
         #:when (lookup-type-alias #'x)
         (syntax->type-rep (lookup-type-alias #'x))]
        [x:id
-        (free-id-table-ref extra-type-map* #'x (lambda () (raise-user-error 'syntax->type-rep "unbound type" (syntax-e #'x))))]
+        (free-id-table-ref extra-type-map* #'x (lambda () (raise-user-error 'syntax->type-rep "unbound type ~a" (syntax-e #'x))))]
        [_
         (raise-user-error 'syntax->type-rep "cannot parse type ~a" (syntax->datum stx))])))
   (define extra
