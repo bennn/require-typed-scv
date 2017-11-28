@@ -3,9 +3,8 @@ gtp
 
 Configurations from the gradual-typing-performance project
 
-TODO
-- run raco setup scv
-- try trie-vector & zordoz
+TODO (2017-11-22)
+- fsm zombie tetris synth snake
 
 | benchmark    | status                       |
 |--------------+------------------------------|
@@ -20,5 +19,5 @@ TODO
 | synth        | ??? (found scv bug, try again later) |
 | tetris       | struct access                |
 | trie-vector  | OK                           |
-| zombie       | ??? probably struct          |
+| zombie       | or/c +1 higher-order disjunct |
 | zordoz       | remove compiler/zo macros    |
