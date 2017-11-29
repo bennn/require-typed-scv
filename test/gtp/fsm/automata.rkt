@@ -15,32 +15,39 @@
  ;; --
  automaton?
 )
-(provide (contract-out
- [automaton? (-> any/c boolean?)]
- (automaton-payoff (-> automaton? exact-nonnegative-integer?))
- (defects (-> exact-nonnegative-integer? automaton?))
- (cooperates (-> exact-nonnegative-integer? automaton?))
- (tit-for-tat (-> exact-nonnegative-integer? automaton?))
- (grim-trigger (-> exact-nonnegative-integer? automaton?))
- (make-random-automaton
-  (-> exact-nonnegative-integer? automaton?))
- (match-pair
-   (-> automaton? automaton? exact-nonnegative-integer? (values automaton? automaton?)))
- (automaton-reset
-  (-> automaton? automaton?))
- (clone
-  (-> automaton? automaton?))
-))
-
-;; -----------------------------------------------------------------------------
-(define COOPERATE 0)
-(define DEFECT    1)
 
 (struct automaton (current
                    original
                    payoff
                    table)
                    #;#:transparent )
+
+(define automaton/c
+  (struct/c automaton
+    exact-nonnegative-integer?
+    exact-nonnegative-integer?
+    (>=/c 0)
+    (vectorof (vectorof exact-nonnegative-integer?))))
+
+(provide automaton/c (contract-out
+ (automaton-payoff (-> automaton/c (>=/c 0)))
+ (defects (-> exact-nonnegative-integer? automaton/c))
+ (cooperates (-> exact-nonnegative-integer? automaton/c))
+ (tit-for-tat (-> exact-nonnegative-integer? automaton/c))
+ (grim-trigger (-> exact-nonnegative-integer? automaton/c))
+ (make-random-automaton
+  (-> exact-nonnegative-integer? automaton/c))
+ (match-pair
+   (-> automaton/c automaton/c exact-nonnegative-integer? (values automaton/c automaton/c)))
+ (automaton-reset
+  (-> automaton/c automaton/c))
+ (clone
+  (-> automaton/c automaton/c))
+))
+
+;; -----------------------------------------------------------------------------
+(define COOPERATE 0)
+(define DEFECT    1)
 
 (define (make-random-automaton n)
   (define (transitions _i) (build-vector n (lambda (_) (random n))))

@@ -4,15 +4,15 @@
 
 
 (provide
- sum
- relative-average
- choose-randomly
- #;(contract-out ;;bg: SCV needs contract-out
+ ;sum
+ ;relative-average
+ ;choose-randomly
+ (contract-out ;;bg: SCV needs contract-out
    (relative-average
     (-> (listof real?) real? real?))
    (choose-randomly
-    (-> [listof exact-nonnegative-integer?] exact-nonnegative-integer? (or/c boolean? real?)
-        [listof exact-nonnegative-integer?]))))
+    (-> [listof (>=/c 0)] exact-nonnegative-integer? (or/c boolean? real?)
+        [listof (>=/c 0)]))))
 
 ;; =============================================================================
 
@@ -22,8 +22,9 @@
 
 (define (relative-average l w)
   (define z (length l))
+  (define s (sum l))
   (exact->inexact
-   (/ (sum l)
+   (/ s
       (if (zero? w) (error 'BG) w)
       (if (zero? z) (error 'BG) z))))
 
@@ -59,5 +60,5 @@
 (define (safe-quotient a b)
   (if (zero? b)
     (error 'BG)
-    (quotient a b)))
+    (/ a b)))
 

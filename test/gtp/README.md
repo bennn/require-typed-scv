@@ -8,7 +8,7 @@ TODO (2017-11-22)
 
 | benchmark    | status                       |
 |--------------+------------------------------|
-| fsm          | struct accessor, automat...  |
+| fsm          | main.rkt needs import Automaton type ... not sure how to do that and still have population.rkt passing |
 | lnm          | depends on TR                |
 | mbta         | class                        |
 | morsecode    | OK                           |
